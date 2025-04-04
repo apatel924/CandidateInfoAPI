@@ -11,8 +11,8 @@ builder.Services.AddSwaggerGen();             // Swagger documentation generator
 
 // Database configuration with Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-   
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 // Custom service registration
 builder.Services.AddScoped<CandidateScraper>();
 
