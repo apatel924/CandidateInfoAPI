@@ -77,8 +77,9 @@ namespace CandidateInfoAPI.Controllers
                 return BadRequest("No candidates found.");
 
             _context.Candidates.AddRange(scraped);
-            _context.SaveChanges();
-            return Ok(new { message = $"{scraped.Count} candidates saved." });
+            var saved = _context.SaveChanges();
+
+            return Ok(new { message = $"{scraped.Count} scraped, {saved} saved." });
         }
     }
 }
