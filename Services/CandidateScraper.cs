@@ -43,7 +43,7 @@ namespace CandidateInfoAPI.Services
                         {
                             Riding = CleanText(cells[0]),
                             Name = CleanText(cells[1]),
-                            Party = CleanText(cells[2]),
+                            Party = CleanText(cells[2]).Replace("█", "").Trim(),
                             Result = cells.Count >= 4 ? CleanText(cells[3]) : ""
                         };
 
