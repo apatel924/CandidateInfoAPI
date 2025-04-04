@@ -16,22 +16,34 @@ namespace CandidateInfoAPI.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public IActionResult GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 25)
+        [HttpGet("filter")]
+        public IActionResult Filter(
+            [FromQuery] string? party,
+            [FromQuery] string? riding,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 25)
         {
-            var candidates = _context.Candidates
+            var query = _context.Candidates.AsQueryable();
+
+            if (!string.IsNullOrEmpty(party))
+                query = query.Where(c => c.Party.Contains(party));
+
+            if (!string.IsNullOrEmpty(riding))
+                query = query.Where(c => c.Riding.Contains(riding));
+
+            var total = query.Count();
+
+            var results = query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
-
-            var total = _context.Candidates.Count();
 
             return Ok(new
             {
                 Page = page,
                 PageSize = pageSize,
                 TotalCount = total,
-                Results = candidates
+                Results = results
             });
         }
 
