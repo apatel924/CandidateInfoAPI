@@ -39,15 +39,18 @@ namespace CandidateInfoAPI.Services
 
                     try
                     {
-                        var candidate = new Candidate
+                        if (cells.Count < 4) continue;
+
+                        string party = CleanText(cells[2]).Replace("█", "").Trim();
+                        string result = cells[3].InnerText.Contains("✓") ? "Elected" : "Not Elected";
+
+                        candidates.Add(new Candidate
                         {
                             Riding = CleanText(cells[0]),
                             Name = CleanText(cells[1]),
-                            Party = CleanText(cells[2]).Replace("█", "").Trim(),
-                            Result = cells.Count >= 4 ? CleanText(cells[3]) : ""
-                        };
-
-                        candidates.Add(candidate);
+                            Party = party,
+                            Result = result
+                        });
                     }
                     catch
                     {
