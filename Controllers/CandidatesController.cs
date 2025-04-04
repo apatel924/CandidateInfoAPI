@@ -47,6 +47,28 @@ namespace CandidateInfoAPI.Controllers
             });
         }
 
+        [HttpGet("report")]
+        public IActionResult GetReport()
+        {
+            var partySummary = _context.Candidates
+                .GroupBy(c => c.Party)
+                .Select(g => new
+                {
+                    Party = g.Key,
+                    TotalCandidates = g.Count(),
+                    ElectedCount = g.Count(c => c.Result.Contains("Elected"))
+                })
+                .OrderByDescending(p => p.TotalCandidates)
+                .ToList();
+
+            return Ok(new
+            {
+                TotalCandidates = _context.Candidates.Count(),
+                TotalParties = partySummary.Count,
+                Report = partySummary
+            });
+        }
+
         [HttpPost("scrape")]
         public IActionResult ScrapeAndSave([FromServices] CandidateScraper scraper)
         {
