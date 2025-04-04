@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "O4jQiS6HRz16f2ayr5RPUBWD4JKV/0nqjvZr8S51eq4=",
+  "Source": "CandidateInfoAPI",
+  "BasePath": "_content/CandidateInfoAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
