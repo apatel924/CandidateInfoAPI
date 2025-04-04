@@ -1,0 +1,6 @@
+@CandidateInfoAPI_HostAddress = http://localhost:5220
+
+GET {{CandidateInfoAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
