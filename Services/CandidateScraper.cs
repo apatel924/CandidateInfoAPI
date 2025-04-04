@@ -41,10 +41,10 @@ namespace CandidateInfoAPI.Services
                     {
                         var candidate = new Candidate
                         {
-                            Name = CleanText(cells[0]),
-                            Riding = CleanText(cells[1]),
+                            Riding = CleanText(cells[0]),
+                            Name = CleanText(cells[1]),
                             Party = CleanText(cells[2]),
-                            Result = cells.Count >= 4 ? CleanText(cells[3]) : "Unknown"
+                            Result = cells.Count >= 4 ? CleanText(cells[3]) : ""
                         };
 
                         candidates.Add(candidate);
