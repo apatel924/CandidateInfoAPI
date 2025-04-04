@@ -25,38 +25,32 @@ namespace CandidateInfoAPI.Services
                 if (rows == null || rows.Count < 2)
                     continue;
 
+                var headerCells = rows[0].SelectNodes("th")?.Select(h => h.InnerText.Trim().ToLower()).ToList();
+                if (headerCells == null || !headerCells.Any(h => h.Contains("party")) || !headerCells.Any(h => h.Contains("riding") || h.Contains("name")))
+                    continue; // skip non-candidate tables
+
                 foreach (var row in rows.Skip(1)) // Skip table headers
                 {
                     var cells = row.SelectNodes("td");
-                    if (cells == null || cells.Count < 3)
+                    if (cells == null || cells.Count < 4)
                         continue;
 
-                    // Some cells may include references — strip them out
-                    string CleanText(HtmlNode node)
-                    {
-                        return HtmlEntity.DeEntitize(node.InnerText).Trim();
-                    }
+                    string CleanText(HtmlNode node) => HtmlEntity.DeEntitize(node.InnerText).Trim();
 
-                    try
-                    {
-                        if (cells.Count < 4) continue;
+                    string party = CleanText(cells[2]).Replace("█", "").Trim();
+                    string result = cells[3].InnerText.Contains("✓") ? "Elected" : "Not Elected";
 
-                        string party = CleanText(cells[2]).Replace("█", "").Trim();
-                        string result = cells[3].InnerText.Contains("✓") ? "Elected" : "Not Elected";
-
-                        candidates.Add(new Candidate
-                        {
-                            Riding = CleanText(cells[0]),
-                            Name = CleanText(cells[1]),
-                            Party = party,
-                            Result = result
-                        });
-                    }
-                    catch
-                    {
-                        // Skip bad rows
+                    // Skip rows with non-party garbage
+                    if (string.IsNullOrWhiteSpace(party) || party.Any(char.IsDigit) || party.Length < 2)
                         continue;
-                    }
+
+                    candidates.Add(new Candidate
+                    {
+                        Riding = CleanText(cells[0]),
+                        Name = CleanText(cells[1]),
+                        Party = party,
+                        Result = result
+                    });
                 }
             }
 
