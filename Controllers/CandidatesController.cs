@@ -17,10 +17,22 @@ namespace CandidateInfoAPI.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 25)
         {
-            var candidates = _context.Candidates.ToList();
-            return Ok(candidates);
+            var candidates = _context.Candidates
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var total = _context.Candidates.Count();
+
+            return Ok(new
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = total,
+                Results = candidates
+            });
         }
 
         [HttpPost("scrape")]
