@@ -32,25 +32,43 @@ namespace CandidateInfoAPI.Services
                 foreach (var row in rows.Skip(1)) // Skip table headers
                 {
                     var cells = row.SelectNodes("td");
-                    if (cells == null || cells.Count < 4)
+                    if (cells == null)
                         continue;
 
-                    string CleanText(HtmlNode node) => HtmlEntity.DeEntitize(node.InnerText).Trim();
-
-                    string party = CleanText(cells[2]).Replace("█", "").Trim();
-                    string result = cells[3].InnerText.Contains("✓") ? "Elected" : "Not Elected";
-
-                    // Skip rows with non-party garbage
-                    if (string.IsNullOrWhiteSpace(party) || party.Any(char.IsDigit) || party.Length < 2)
-                        continue;
-
-                    candidates.Add(new Candidate
+                    try
                     {
-                        Riding = CleanText(cells[0]),
-                        Name = CleanText(cells[1]),
-                        Party = party,
-                        Result = result
-                    });
+                        string CleanText(HtmlNode node) => HtmlEntity.DeEntitize(node.InnerText).Trim();
+
+                        // Check for valid data
+                        if (cells.Count < 4) continue;
+
+                        var rawRiding = CleanText(cells[0]);
+                        var rawName = CleanText(cells[1]);
+                        var rawParty = CleanText(cells[2]);
+                        var rawResult = cells[3].InnerText;
+
+                        // 💥 Clean party field
+                        string party = rawParty.Replace("█", "").Trim();
+
+                        // 🚫 Filter out obvious names (people)
+                        if (party.Split(" ").Length == 2 && char.IsUpper(party[0]))
+                            continue;
+
+                        // ✅ Determine result
+                        string result = rawResult.Contains("✓") ? "Elected" : "Not Elected";
+
+                        candidates.Add(new Candidate
+                        {
+                            Riding = rawRiding,
+                            Name = rawName,
+                            Party = party,
+                            Result = result
+                        });
+                    }
+                    catch
+                    {
+                        continue;
+                    }
                 }
             }
 
