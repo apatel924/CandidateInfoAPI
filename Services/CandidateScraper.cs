@@ -13,9 +13,7 @@ namespace CandidateInfoAPI.Services
             var web = new HtmlWeb();
             var doc = web.Load(url);
 
-            // Wikipedia uses multiple tables, one per riding
             var tables = doc.DocumentNode.SelectNodes("//table[contains(@class, 'wikitable')]");
-
             if (tables == null || tables.Count == 0)
                 return candidates;
 
@@ -25,49 +23,36 @@ namespace CandidateInfoAPI.Services
                 if (rows == null || rows.Count < 2)
                     continue;
 
-                var headerCells = rows[0].SelectNodes("th")?.Select(h => h.InnerText.Trim().ToLower()).ToList();
-                if (headerCells == null || !headerCells.Any(h => h.Contains("party")) || !headerCells.Any(h => h.Contains("riding") || h.Contains("name")))
-                    continue; // skip non-candidate tables
+                string CleanText(HtmlNode node) => HtmlEntity.DeEntitize(node.InnerText).Trim();
 
-                foreach (var row in rows.Skip(1)) // Skip table headers
+                var headerNodes = rows[0].SelectNodes("th");
+                if (headerNodes == null || headerNodes.Count < 2)
+                    continue;
+
+                var headerCells = headerNodes.Select(h => CleanText(h)).ToList();
+
+                foreach (var row in rows.Skip(1))
                 {
                     var cells = row.SelectNodes("td");
-                    if (cells == null)
+                    if (cells == null || cells.Count < 2)
                         continue;
 
-                    try
+                    string riding = CleanText(cells[0]);
+
+                    for (int i = 1; i < Math.Min(cells.Count, headerCells.Count - 1); i++)
                     {
-                        string CleanText(HtmlNode node) => HtmlEntity.DeEntitize(node.InnerText).Trim();
+                        string candidateName = CleanText(cells[i]);
+                        if (string.IsNullOrWhiteSpace(candidateName)) continue;
 
-                        // Check for valid data
-                        if (cells.Count < 4) continue;
-
-                        var rawRiding = CleanText(cells[0]);
-                        var rawName = CleanText(cells[1]);
-                        var rawParty = CleanText(cells[2]);
-                        var rawResult = cells[3].InnerText;
-
-                        // 💥 Clean party field
-                        string party = rawParty.Replace("█", "").Trim();
-
-                        // 🚫 Filter out obvious names (people)
-                        if (party.Split(" ").Length == 2 && char.IsUpper(party[0]))
-                            continue;
-
-                        // ✅ Determine result
-                        string result = rawResult.Contains("✓") ? "Elected" : "Not Elected";
+                        string party = headerCells[i];
 
                         candidates.Add(new Candidate
                         {
-                            Riding = rawRiding,
-                            Name = rawName,
+                            Name = candidateName,
+                            Riding = riding,
                             Party = party,
-                            Result = result
+                            Result = "Unknown"
                         });
-                    }
-                    catch
-                    {
-                        continue;
                     }
                 }
             }
